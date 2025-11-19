@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wage Estimator San Francisco 2026-2029</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --ta-red: #c0392b; 
+            --ta-bg: #fadbd8; /* Light Red Background */
+            --ta-text: #7b241c; 
+            --uc-blue: #2980b9; 
+            --uc-bg: #d6eaf8; /* Light Blue Background */
+            --uc-text: #154360; 
+            --bg-light: #f4f6f7;
+            --white: #ffffff;
+            --text-dark: #333;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-light);
+            margin: 0;
+            padding: 20px;
+            color: var(--text-dark);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--white);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        /* Header Styling */
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 20px;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .disclaimer {
+            font-size: 0.85rem;
+            color: #666;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .credits {
+            font-size: 0.75rem;
+            color: #888;
+            font-style: italic;
+        }
+
+        /* Input Section */
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--primary-color);
+        }
+
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 1rem;
+            background-color: #fff;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: #34495e;
+        }
+
+        .instructions {
+            background-color: #fff8dc;
+            border-left: 4px solid #f1c40f;
+            padding: 15px;
+            margin: 20px 0;
+            font-size: 0.9rem;
+            font-style: italic;
+            font-weight: bold;
+        }
+
+        /* Results Section */
+        #resultsArea {
+            display: none; /* Hidden by default */
+            margin-top: 30px;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        .result-banner {
+            background-color: #e8f6f3;
+            border: 2px solid #27ae60;
+            color: #145a32;
+            padding: 15px;
+            border-radius: 8px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 350px;
+            width: 100%;
+            margin-bottom: 40px;
+            padding: 10px;
+            background: #fff;
+            border-radius: 8px;
+            border: 1px solid #eee;
+        }
+
+        .chart-title {
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: var(--primary-color);
+        }
+
+        /* Comparison Table Styling */
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            border: 1px solid #ddd;
+        }
+
+        .comparison-table th, .comparison-table td {
+            padding: 10px;
+            text-align: center;
+            border-bottom: 1px solid #ccc;
+        }
+
+        .comparison-table th {
+            color: white;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+        }
+
+        /* Specific Column Colors */
+        .th-year { background-color: var(--primary-color); }
+        .th-ta { background-color: var(--ta-red); }
+        .th-uc { background-color: var(--uc-blue); }
+
+        /* --- COLORIZED COLUMNS (Applied to all cells in column) --- */
+        .col-ta {
+            background-color: var(--ta-bg);
+            color: var(--ta-text);
+            border-left: 1px solid #e6b0aa;
+            border-right: 1px solid #e6b0aa;
+        }
+
+        .col-uc {
+            background-color: var(--uc-bg);
+            color: var(--uc-text);
+            border-left: 1px solid #a9cce3;
+            border-right: 1px solid #a9cce3;
+        }
+
+        /* Specific styling for the % offer text to make it pop slightly more */
+        .uc-note {
+            background-color: #ebf5fb;
+            border-left: 4px solid var(--uc-blue);
+            padding: 15px;
+            font-size: 0.9rem;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+
+        .salary-disclaimer {
+            text-align: center;
+            font-weight: bold;
+            color: #856404;
+            background-color: #fff3cd;
+            border: 1px solid #ffeeba;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+        }
+
+        .final-salary {
+            text-align: center;
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--ta-text);
+            background-color: var(--ta-bg);
+            border: 2px solid var(--ta-red);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 30px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        /* Reference Table Section */
+        .reference-section {
+            margin-top: 50px;
+            border-top: 2px dashed #ccc;
+            padding-top: 30px;
+        }
+        
+        .reference-section h2 {
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        .ref-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+            min-width: 600px;
+        }
+
+        .ref-table th, .ref-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+
+        .ref-table th {
+            background-color: #f2f2f2;
+            color: #333;
+            position: sticky;
+            top: 0;
+        }
+
+        .ref-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        .ref-table tr:hover {
+            background-color: #eafaf1;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 600px) {
+            h1 { font-size: 1.4rem; }
+            .container { padding: 15px; }
+            .comparison-table { font-size: 0.75rem; }
+            .comparison-table th, .comparison-table td { padding: 6px 2px; }
+            .chart-container { height: 280px; }
+            .th-ta, .th-uc { font-size: 0.7rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>WAGE ESTIMATOR SAN FRANCISCO 2026-2029 CNA CONTRACT</h1>
+        <h3>🌲💰💻</h3>
+        <span class="disclaimer">Disclaimer: Rough estimate, real numbers might vary case by case.</span>
+        <span class="credits">Coded by AI - Presented by Dai Dang</span>
+    </header>
+
+    <div class="input-section">
+        <div class="input-group">
+            <label for="classification">Nursing Classification</label>
+            <select id="classification">
+                <option value="0">Clinical Nurse 2</option>
+                <option value="1">Clinical Nurse 3</option>
+                <option value="2">Nurse Practitioner 1</option>
+                <option value="3">Nurse Practitioner 2</option>
+                <option value="4">CRNA</option>
+                <option value="5">Nurse Admin</option>
+                <option value="6">Nurse Coordinator</option>
+                <option value="7">Home Health Nurse 1</option>
+            </select>
+        </div>
+
+        <div class="input-group">
+            <label for="step">Step (Current 2025 Step)</label>
+            <select id="step">
+                <option value="1">1</option><option value="2">2</option><option value="3">3</option>
+                <option value="4">4</option><option value="5">5</option><option value="6">6</option>
+                <option value="7">7</option><option value="8">8</option><option value="9">9</option>
+                <option value="10">10</option><option value="11">11</option>
+            </select>
+        </div>
+
+        <button onclick="generateEstimation()">Generate</button>
+
+        <div class="instructions">
+             Please select your Nursing Classification and Step. Refer to the 2025 Pay Scale below for your current step.
+            <br>
+            If you don't know your step, check your paycheck and look for Pay Rate on top of your paycheck and compare it to the Pay Scale.
+            <br><br>
+            <strong>To simplify estimation due to personal, complex variations:</strong> 
+            <ul>
+                <li><strong>Step 5 Freeze:</strong> If you reach or are at Step 5 in 2025, you will remain frozen at Step 5 until 2029, at which point you will jump to Step 6.</li>
+                <li><strong>Upper Step Freeze:</strong> Steps 7, 8, 9, 10, and 11 are completely frozen (no progression).</li>
+            </ul>
+        </div>
+    </div>
+
+    <div id="resultsArea">
+        <div class="result-banner">
+            Tentative Agreement secured 19.49% pay raise over 4 years v.s. UC Initial Offer 13.7% over 5 years or 10.7% over 4 year.
+        </div>
+
+        <div class="table-responsive">
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th class="th-year" rowspan="2">Year</th>
+                        <th class="th-ta" colspan="2">Tentative Agreement</th>
+                        <th class="th-uc" colspan="2">UC Initial Offer</th>
+                    </tr>
+                    <tr>
+                        <th class="th-ta" style="font-size: 0.75rem">% Offer</th>
+                        <th class="th-ta">Hourly Rate</th>
+                        <th class="th-uc" style="font-size: 0.75rem">% Offer</th>
+                        <th class="th-uc">Hourly Rate</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                </tbody>
+            </table>
+        </div>
+
+        <div class="uc-note">
+            <b>The 27% Pay Raise over 5 year UC kept talking about was False Marketing Tactics. They included 2% Step Increase (Which already included in every contracts no matter what), and 3.3% of Lump Sum. Which explained why the inflated number was 27%. Actual pay raise they offered was 13.7% over 5 years, or 10.7% over 4 years if you don't count 2030.</b>
+        </div>
+
+        <div class="chart-title">Projected Hourly Rate (2025-2029)</div>
+        <div class="chart-container">
+            <canvas id="wageChart"></canvas>
+        </div>
+
+        <div class="salary-disclaimer">
+            Total Annual Salary based on 40 hours a week or 2080 hours a year
+        </div>
+
+        <div class="chart-title">Summary: Total Increase & Final Annual Salary</div>
+        <div class="chart-container">
+            <canvas id="summaryChart"></canvas>
+        </div>
+        
+        <div class="chart-title">Yearly Annual Salary Comparison (2026-2029)</div>
+        <div class="chart-container">
+            <canvas id="annualSalaryChart"></canvas>
+        </div>
+
+        <div id="finalSalaryDisplay" class="final-salary" style="display:none;"></div>
+    </div>
+
+    <div class="reference-section">
+        <h2>2025 PAY SCALE REFERENCE</h2>
+        <div class="table-responsive">
+            <table class="ref-table">
+                <thead>
+                    <tr>
+                        <th>Step</th>
+                        <th>CN 2</th>
+                        <th>CN 3</th>
+                        <th>NP 1</th>
+                        <th>NP 2</th>
+                        <th>CRNA</th>
+                        <th>Nurse Admin</th>
+                        <th>Nurse Coord</th>
+                        <th>HHN 1</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>1</td><td>$89.02</td><td>$93.09</td><td>$95.73</td><td>$100.48</td><td>$112.26</td><td>$93.09</td><td>$95.76</td><td>$89.02</td></tr>
+                    <tr><td>2</td><td>$92.25</td><td>$96.45</td><td>$99.15</td><td>$104.04</td><td>$116.74</td><td>$96.45</td><td>$99.24</td><td>$92.24</td></tr>
+                    <tr><td>3</td><td>$95.55</td><td>$99.94</td><td>$102.76</td><td>$107.82</td><td>$121.47</td><td>$99.94</td><td>$102.80</td><td>$95.55</td></tr>
+                    <tr><td>4</td><td>$98.98</td><td>$103.55</td><td>$106.46</td><td>$111.67</td><td>$126.30</td><td>$103.55</td><td>$106.52</td><td>$98.98</td></tr>
+                    <tr><td>5</td><td>$102.55</td><td>$107.24</td><td>$110.28</td><td>$115.65</td><td>$131.35</td><td>$107.23</td><td>$110.32</td><td>$102.54</td></tr>
+                    <tr><td>6</td><td>$104.59</td><td>$109.38</td><td>$112.50</td><td>$118.01</td><td>$136.60</td><td>$109.38</td><td>$112.52</td><td>$104.57</td></tr>
+                    <tr><td>7</td><td>$106.68</td><td>$111.60</td><td>$114.79</td><td>$120.41</td><td>$142.07</td><td>$111.60</td><td>$114.79</td><td>$106.67</td></tr>
+                    <tr><td>8</td><td>$108.83</td><td>$113.86</td><td>$117.04</td><td>$122.80</td><td>$147.71</td><td>$113.85</td><td>$117.09</td><td>$108.83</td></tr>
+                    <tr><td>9</td><td>$110.97</td><td>$116.11</td><td>$119.40</td><td>$125.26</td><td>$153.62</td><td>$116.11</td><td>$119.45</td><td>$110.97</td></tr>
+                    <tr><td>10</td><td>$113.07</td><td>$118.40</td><td>$121.76</td><td>$127.73</td><td>$159.78</td><td>$118.40</td><td>$121.85</td><td>$113.07</td></tr>
+                    <tr><td>11</td><td>$115.34</td><td>$120.75</td><td>$124.22</td><td>$130.31</td><td>$163.00</td><td>$120.75</td><td>$124.25</td><td>$115.34</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    // DATA SET (0: CN2, 1: CN3, 2: NP1, 3: NP2, 4: CRNA, 5: Admin, 6: Coord, 7: HHN1)
+    const payData = {
+        1:  [89.02, 93.09, 95.73, 100.48, 112.26, 93.09, 95.76, 89.02],
+        2:  [92.25, 96.45, 99.15, 104.04, 116.74, 96.45, 99.24, 92.24],
+        3:  [95.55, 99.94, 102.76, 107.82, 121.47, 99.94, 102.80, 95.55],
+        4:  [98.98, 103.55, 106.46, 111.67, 126.30, 103.55, 106.52, 98.98],
+        5:  [102.55, 107.24, 110.28, 115.65, 131.35, 107.23, 110.32, 102.54],
+        6:  [104.59, 109.38, 112.50, 118.01, 136.60, 109.38, 112.52, 104.57],
+        7:  [106.68, 111.60, 114.79, 120.41, 142.07, 111.60, 114.79, 106.67],
+        8:  [108.83, 113.86, 117.04, 122.80, 147.71, 113.85, 117.09, 108.83],
+        9:  [110.97, 116.11, 119.40, 125.26, 153.62, 116.11, 119.45, 110.97],
+        10: [113.07, 118.40, 121.76, 127.73, 159.78, 118.40, 121.85, 113.07],
+        11: [115.34, 120.75, 124.22, 130.31, 163.00, 120.75, 124.25, 115.34]
+    };
+
+    let chartWage = null;
+    let chartSummary = null;
+    let chartAnnual = null;
+
+    function getBaseWage(step, classIndex) {
+        if (!payData[step]) return 0;
+        return payData[step][classIndex];
+    }
+
+    function generateEstimation() {
+        const classIndex = parseInt(document.getElementById('classification').value);
+        const startStep = parseInt(document.getElementById('step').value);
+
+        // Raises
+        const taRaises = [1.0533, 1.0533, 1.0483, 1.04];
+        const taPercents = ["5.33%", "5.33%", "4.83%", "4.0%"];
+        const ucRaises = [1.032, 1.025, 1.025, 1.025, 1.03];
+        const ucPercents = ["3.2%", "2.5%", "2.5%", "2.5%", "3.0%"];
+
+        let resultsTA = [];
+        let resultsUC = [];
+
+        // --- 2025 BASE YEAR ---
+        let baseWage2025 = getBaseWage(startStep, classIndex);
+        if (baseWage2025 === 0) {
+            alert("The selected step does not contain data for this classification.");
+            return;
+        }
+
+        let entry2025 = {
+            year: 2025,
+            step: startStep,
+            wage: baseWage2025.toFixed(2),
+            annual: (baseWage2025 * 2080).toFixed(0),
+            offer: "-",
+            offerUC: "-"
+        };
+        resultsTA.push(entry2025);
+        resultsUC.push(entry2025);
+
+        // --- TENTATIVE AGREEMENT ---
+        // Step Progression Logic:
+        // 1. Generally Step + 1 each year.
+        // 2. Freeze at Step 5: If you reach Step 5, you stay there for years < 2029.
+        // 3. In 2029, if you are at Step 5, you jump to Step 6.
+        // 4. Steps 6, 7, 8, 9, 10, 11 are effectively static (complete freeze, though Step 5 jumps into 6).
+
+        let taCumulativeMultiplier = 1.0;
+        
+        // We simulate year by year to track the specific step
+        let currentStep = startStep;
+
+        for(let i = 0; i < 4; i++) { 
+            let year = 2026 + i;
+            taCumulativeMultiplier *= taRaises[i];
+            
+            // Determine Next Step for this year
+            // We look at what the step was in the previous year (currentStep) and decide the new one.
+            let nextStep = currentStep;
+
+            if (currentStep < 5) {
+                // Normal progression for 1->2, 2->3, 3->4, 4->5
+                nextStep = currentStep + 1;
+            } else if (currentStep === 5) {
+                // If currently at 5, we check the year.
+                // "freeze until 2029, then jump to 6".
+                if (year === 2029) {
+                    nextStep = 6;
+                } else {
+                    nextStep = 5;
+                }
+            } else {
+                // Steps 6, 7, 8, 9, 10, 11 are frozen.
+                // If you started at 6, you stay at 6.
+                nextStep = currentStep; 
+            }
+
+            currentStep = nextStep;
+
+            // Data bounds check
+            if(currentStep > 11) currentStep = 11;
+
+            let baseWage = getBaseWage(currentStep, classIndex);
+            let finalWage = (baseWage === 0) ? 0 : baseWage * taCumulativeMultiplier;
+
+            resultsTA.push({
+                year: year,
+                step: currentStep,
+                wage: (finalWage === 0) ? "-" : finalWage.toFixed(2),
+                annual: (finalWage === 0) ? "-" : (finalWage * 2080).toFixed(0),
+                offer: taPercents[i]
+            });
+        }
+        resultsTA.push({ year: 2030, step: "-", wage: "-", annual: "-", offer: "-" });
+
+        // --- UC INITIAL OFFER ---
+        // Assuming UC offer also follows the same step logic or default? 
+        // Usually comparisons use same step logic unless specified. I will use the SAME Logic.
+        
+        let ucCumulativeMultiplier = 1.0;
+        currentStep = startStep; // Reset for UC loop
+
+        for(let i = 0; i < 5; i++) { 
+            let year = 2026 + i;
+            ucCumulativeMultiplier *= ucRaises[i];
+
+            let nextStep = currentStep;
+
+            if (currentStep < 5) {
+                nextStep = currentStep + 1;
+            } else if (currentStep === 5) {
+                if (year === 2029) {
+                    nextStep = 6;
+                } else {
+                    nextStep = 5;
+                }
+            } else {
+                nextStep = currentStep; 
+            }
+
+            currentStep = nextStep;
+            if(currentStep > 11) currentStep = 11;
+
+            let baseWage = getBaseWage(currentStep, classIndex);
+            let finalWage = (baseWage === 0) ? 0 : baseWage * ucCumulativeMultiplier;
+
+            resultsUC.push({
+                year: year,
+                step: currentStep,
+                wage: finalWage === 0 ? "-" : finalWage.toFixed(2),
+                annual: finalWage === 0 ? "-" : (finalWage * 2080).toFixed(0),
+                offer: ucPercents[i]
+            });
+        }
+
+        displayResults(resultsTA, resultsUC);
+    }
+
+    function displayResults(taData, ucData) {
+        document.getElementById('resultsArea').style.display = 'block';
+        const tbody = document.getElementById('tableBody');
+        tbody.innerHTML = '';
+
+        for(let i=0; i<taData.length; i++) {
+            let taOffer = taData[i].offer;
+            let ucOffer = ucData[i] ? ucData[i].offer : "-";
+            
+            let taWageDisplay = taData[i].wage === "-" ? "-" : `<strong>$${taData[i].wage}</strong> <br><span style="font-size:0.8em">(Step ${taData[i].step})</span>`;
+            
+            let ucWageDisplay;
+            if (ucData[i] && ucData[i].wage !== "-") {
+                ucWageDisplay = `<strong>$${ucData[i].wage}</strong> <br><span style="font-size:0.8em">(Step ${ucData[i].step})</span>`;
+            } else {
+                ucWageDisplay = "-";
+            }
+            
+            let row = `<tr>
+                <td>${taData[i].year}</td>
+                <td class="col-ta offer-text">${taOffer}</td>
+                <td class="col-ta">${taWageDisplay}</td>
+                <td class="col-uc offer-text">${ucOffer}</td>
+                <td class="col-uc">${ucWageDisplay}</td>
+            </tr>`;
+            tbody.innerHTML += row;
+        }
+
+        // Final Salary 2029
+        const finalSalary2029 = taData[4].annual !== "-" ? parseInt(taData[4].annual).toLocaleString() : "N/A";
+        const salaryDiv = document.getElementById('finalSalaryDisplay');
+        salaryDiv.style.display = 'block';
+        salaryDiv.innerHTML = `Your Final Annual Salary in 2029 will be $${finalSalary2029}`;
+
+        updateWageChart(taData, ucData);
+        updateSummaryChart(taData, ucData);
+        updateAnnualSalaryChart(taData, ucData);
+        
+        document.getElementById('resultsArea').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function updateWageChart(taData, ucData) {
+        const ctx = document.getElementById('wageChart').getContext('2d');
+        if(chartWage) chartWage.destroy();
+
+        const filteredTA = taData.slice(0, 5).filter(d => d.wage !== "-");
+        const filteredUC = ucData.slice(0, 5).filter(d => d.wage !== "-");
+
+        chartWage = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: filteredTA.map(d => d.year),
+                datasets: [
+                    {
+                        label: 'Tentative Agreement',
+                        data: filteredTA.map(d => parseFloat(d.wage)),
+                        borderColor: '#c0392b',
+                        backgroundColor: '#c0392b',
+                        pointRadius: 5,
+                        borderWidth: 3,
+                        tension: 0.1
+                    },
+                    {
+                        label: 'UC Initial Offer',
+                        data: filteredUC.map(d => parseFloat(d.wage)),
+                        borderColor: '#2980b9',
+                        backgroundColor: '#2980b9',
+                        pointRadius: 5,
+                        borderWidth: 3,
+                        tension: 0.1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        ticks: { callback: function(value) { return '$' + value; } },
+                        title: { display: true, text: 'Hourly Rate' },
+                        beginAtZero: false
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label + ': $' + context.parsed.y.toFixed(2);
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    function updateSummaryChart(taData, ucData) {
+        const ctx = document.getElementById('summaryChart').getContext('2d');
+        if(chartSummary) chartSummary.destroy();
+
+        const index2029 = 4;
+        
+        if(taData[index2029].wage === "-" || ucData[index2029].wage === "-") {
+             chartSummary = new Chart(ctx, {type:'bar', data:{}, options:{plugins:{title:{display:true, text:'Data unavailable for selected range'}}}});
+             return;
+        }
+
+        const taFinal = parseFloat(taData[index2029].annual);
+        const ucFinal = parseFloat(ucData[index2029].annual);
+        const base2025 = parseFloat(taData[0].annual); 
+
+        const taIncrease = taFinal - base2025;
+        const ucIncrease = ucFinal - base2025;
+
+        chartSummary = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Total Increase (2025-2029)', 'Annual Salary (2029)'],
+                datasets: [
+                    {
+                        label: 'Tentative Agreement',
+                        data: [taIncrease, taFinal],
+                        backgroundColor: '#c0392b',
+                        borderColor: '#922b21',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'UC Initial Offer',
+                        data: [ucIncrease, ucFinal],
+                        backgroundColor: '#2980b9',
+                        borderColor: '#154360',
+                        borderWidth: 1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'top' },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label + ': $' + Math.round(context.parsed.y).toLocaleString();
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { callback: function(value) { return '$' + Math.round(value).toLocaleString(); } }
+                    }
+                }
+            }
+        });
+    }
+
+    function updateAnnualSalaryChart(taData, ucData) {
+        const ctx = document.getElementById('annualSalaryChart').getContext('2d');
+        if(chartAnnual) chartAnnual.destroy();
+
+        const labels = ['2026', '2027', '2028', '2029'];
+        // Safe parsing
+        const taSalaries = taData.slice(1, 5).map(d => d.annual === "-" ? 0 : parseFloat(d.annual));
+        const ucSalaries = ucData.slice(1, 5).map(d => d.annual === "-" ? 0 : parseFloat(d.annual));
+
+        chartAnnual = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Tentative Agreement',
+                        data: taSalaries,
+                        backgroundColor: '#c0392b',
+                        borderColor: '#922b21',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'UC Initial Offer',
+                        data: ucSalaries,
+                        backgroundColor: '#2980b9',
+                        borderColor: '#154360',
+                        borderWidth: 1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'top' },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label + ': $' + Math.round(context.parsed.y).toLocaleString();
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        ticks: { callback: function(value) { return '$' + Math.round(value).toLocaleString(); } },
+                        title: { display: true, text: 'Annual Salary ($)' }
+                    }
+                }
+            }
+        });
+    }
+</script>
+
+</body>
+</html>
