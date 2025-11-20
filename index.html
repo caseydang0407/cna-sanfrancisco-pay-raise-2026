@@ -491,25 +491,32 @@
             
             let nextStep = currentStep;
 
-            // *** FIX: NO STEP PROGRESSION IN 2026 ***
+            // LOGIC UPDATE:
+            
+            // 1. NO PROGRESSION IN 2026
             if (year === 2026) {
-                nextStep = currentStep; 
-            } 
-            // Standard Progression Logic for other years
-            else if (currentStep < 5) {
-                nextStep = currentStep + 1;
-            } else if (currentStep === 5) {
-                if (year === 2029) {
+                nextStep = currentStep;
+            }
+            // 2. STEPS 7-11 ARE FROZEN
+            else if (currentStep >= 7) {
+                nextStep = currentStep;
+            }
+            // 3. STEP 5 LOGIC
+            else if (currentStep === 5) {
+                // You stay at 5 UNLESS it is 2029 AND you STARTED at 5 in 2025.
+                // If you started at 3 or 4, you will hit step 5 and stop there.
+                if (year === 2029 && startStep === 5) {
                     nextStep = 6;
                 } else {
-                    nextStep = 5;
+                    nextStep = 5; // Freeze at 5
                 }
-            } else {
-                nextStep = currentStep; 
+            }
+            // 4. NORMAL PROGRESSION (Steps < 5, and Step 6 moving to 7)
+            else {
+                nextStep = currentStep + 1;
             }
 
             currentStep = nextStep;
-
             if(currentStep > 11) currentStep = 11;
 
             let baseWage = getBaseWage(currentStep, classIndex);
@@ -526,8 +533,9 @@
         resultsTA.push({ year: 2030, step: "-", wage: "-", annual: "-", offer: "-" });
 
         // --- UC INITIAL OFFER ---
+        // Applying same step logic for comparison
         let ucCumulativeMultiplier = 1.0;
-        currentStep = startStep; // Reset for UC loop
+        currentStep = startStep; 
 
         for(let i = 0; i < 5; i++) { 
             let year = 2026 + i;
@@ -535,21 +543,22 @@
 
             let nextStep = currentStep;
 
-            // *** FIX: NO STEP PROGRESSION IN 2026 ***
+            // SAME LOGIC AS ABOVE
             if (year === 2026) {
                 nextStep = currentStep;
-            } 
-            // Standard Progression Logic
-            else if (currentStep < 5) {
-                nextStep = currentStep + 1;
-            } else if (currentStep === 5) {
-                if (year === 2029) {
+            }
+            else if (currentStep >= 7) {
+                nextStep = currentStep;
+            }
+            else if (currentStep === 5) {
+                if (year === 2029 && startStep === 5) {
                     nextStep = 6;
                 } else {
                     nextStep = 5;
                 }
-            } else {
-                nextStep = currentStep; 
+            }
+            else {
+                nextStep = currentStep + 1;
             }
 
             currentStep = nextStep;
