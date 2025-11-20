@@ -450,6 +450,42 @@
         return payData[step][classIndex];
     }
 
+    // --- SHARED STEP LOGIC FUNCTION ---
+    function calculateNextStep(currentStep, startStep, year) {
+        // Rule 1: 2026 is a hard freeze for everyone
+        if (year === 2026) {
+            return currentStep;
+        }
+
+        // Rule 2: 2029 is the specific "Jump" year for frozen steps
+        if (year === 2029) {
+            if (currentStep < 5) {
+                return currentStep + 1; // Normal progression
+            } 
+            else if (currentStep === 5) {
+                // Only jump to 6 if you STARTED at 5 in 2025
+                // If you started at 3 or 4, you stay at 5.
+                return (startStep === 5) ? 6 : 5;
+            } 
+            else if (currentStep === 6) {
+                // Only jump to 7 if you STARTED at 6 in 2025
+                return (startStep === 6) ? 7 : 6;
+            } 
+            else {
+                // Step 7+ is completely frozen
+                return currentStep;
+            }
+        }
+
+        // Rule 3: Intermediate Years (2027, 2028)
+        // Normal progression up to step 5. Once at 5 (or higher), you freeze.
+        if (currentStep < 5) {
+            return currentStep + 1;
+        } else {
+            return currentStep;
+        }
+    }
+
     function generateEstimation() {
         const classIndex = parseInt(document.getElementById('classification').value);
         const startStep = parseInt(document.getElementById('step').value);
@@ -489,34 +525,10 @@
             let year = 2026 + i;
             taCumulativeMultiplier *= taRaises[i];
             
-            let nextStep = currentStep;
-
-            // LOGIC UPDATE:
+            // Calculate Step based on new logic
+            currentStep = calculateNextStep(currentStep, startStep, year);
             
-            // 1. NO PROGRESSION IN 2026
-            if (year === 2026) {
-                nextStep = currentStep;
-            }
-            // 2. STEPS 7-11 ARE FROZEN
-            else if (currentStep >= 7) {
-                nextStep = currentStep;
-            }
-            // 3. STEP 5 LOGIC
-            else if (currentStep === 5) {
-                // You stay at 5 UNLESS it is 2029 AND you STARTED at 5 in 2025.
-                // If you started at 3 or 4, you will hit step 5 and stop there.
-                if (year === 2029 && startStep === 5) {
-                    nextStep = 6;
-                } else {
-                    nextStep = 5; // Freeze at 5
-                }
-            }
-            // 4. NORMAL PROGRESSION (Steps < 5, and Step 6 moving to 7)
-            else {
-                nextStep = currentStep + 1;
-            }
-
-            currentStep = nextStep;
+            // Safety Cap
             if(currentStep > 11) currentStep = 11;
 
             let baseWage = getBaseWage(currentStep, classIndex);
@@ -533,7 +545,7 @@
         resultsTA.push({ year: 2030, step: "-", wage: "-", annual: "-", offer: "-" });
 
         // --- UC INITIAL OFFER ---
-        // Applying same step logic for comparison
+        // Applying the same STEP logic to UC offer to isolate the Pay Raise % difference
         let ucCumulativeMultiplier = 1.0;
         currentStep = startStep; 
 
@@ -541,27 +553,10 @@
             let year = 2026 + i;
             ucCumulativeMultiplier *= ucRaises[i];
 
-            let nextStep = currentStep;
+            // Calculate Step based on new logic
+            currentStep = calculateNextStep(currentStep, startStep, year);
 
-            // SAME LOGIC AS ABOVE
-            if (year === 2026) {
-                nextStep = currentStep;
-            }
-            else if (currentStep >= 7) {
-                nextStep = currentStep;
-            }
-            else if (currentStep === 5) {
-                if (year === 2029 && startStep === 5) {
-                    nextStep = 6;
-                } else {
-                    nextStep = 5;
-                }
-            }
-            else {
-                nextStep = currentStep + 1;
-            }
-
-            currentStep = nextStep;
+            // Safety Cap
             if(currentStep > 11) currentStep = 11;
 
             let baseWage = getBaseWage(currentStep, classIndex);
